@@ -1,61 +1,118 @@
-import json
-import logging
-from datetime import datetime
+"""Inventory management system for tracking stock items and quantities."""
 
-# Global variable
+import json
+
+
 stock_data = {}
 
-def addItem(item="default", qty=0, logs=[]):
-    if not item:
-        return
-    stock_data[item] = stock_data.get(item, 0) + qty
-    logs.append("%s: Added %d of %s" % (str(datetime.now()), qty, item))
 
-def removeItem(item, qty):
+def add_item(item, qty, logs=None):
+    """
+    Add an item to the inventory with specified quantity.
+
+    Args:
+        item: Name of the item to add
+        qty: Quantity of the item
+        logs: Optional list to append operation logs
+    """
+    if logs is None:
+        logs = []
+    stock_data[item] = qty
+    logs.append(f"Added {item}")
+    print(f"Added {item} with quantity {qty}")
+
+
+def remove_item(item):
+    """
+    Remove an item from the inventory.
+
+    Args:
+        item: Name of the item to remove
+    """
     try:
-        stock_data[item] -= qty
-        if stock_data[item] <= 0:
+        if item in stock_data:
             del stock_data[item]
-    except:
-        pass
+    except KeyError as e:
+        print(f"Error removing item: {e}")
 
-def getQty(item):
-    return stock_data[item]
 
-def loadData(file="inventory.json"):
-    f = open(file, "r")
-    global stock_data
-    stock_data = json.loads(f.read())
-    f.close()
+def get_qty(item):
+    """
+    Get the quantity of a specific item.
 
-def saveData(file="inventory.json"):
-    f = open(file, "w")
-    f.write(json.dumps(stock_data))
-    f.close()
+    Args:
+        item: Name of the item
 
-def printData():
-    print("Items Report")
-    for i in stock_data:
-        print(i, "->", stock_data[i])
+    Returns:
+        Quantity of the item or 0 if not found
+    """
+    return stock_data.get(item, 0)
 
-def checkLowItems(threshold=5):
-    result = []
-    for i in stock_data:
-        if stock_data[i] < threshold:
-            result.append(i)
-    return result
+
+def load_data(filename):
+    """
+    Load inventory data from a JSON file.
+
+    Args:
+        filename: Path to the JSON file to load
+
+    Returns:
+        dict: The loaded inventory data
+    """
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"File {filename} not found. "
+              "Starting with empty inventory.")
+        return {}
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON from {filename}. "
+              "Starting with empty inventory.")
+        return {}
+
+
+def save_data(filename):
+    """
+    Save inventory data to a JSON file.
+
+    Args:
+        filename: Path to the JSON file to save
+    """
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(stock_data, f)
+
+
+def print_data():
+    """Print all items in the inventory."""
+    for item, qty in stock_data.items():
+        print(f"{item}: {qty}")
+
+
+def check_low_items(threshold=5):
+    """
+    Check and print items below a quantity threshold.
+
+    Args:
+        threshold: Minimum quantity threshold (default: 5)
+    """
+    for item, qty in stock_data.items():
+        if qty < threshold:
+            print(f"Low stock: {item} ({qty})")
+
 
 def main():
-    addItem("apple", 10)
-    addItem("banana", -2)
-    addItem(123, "ten")  # invalid types, no check
-    removeItem("apple", 3)
-    removeItem("orange", 1)
-    print("Apple stock:", getQty("apple"))
-    print("Low items:", checkLowItems())
-    saveData()
-    loadData()
-    printData()
-    eval("print('eval used')")  # dangerous
+    """Main function to demonstrate inventory system functionality."""
+    # Load existing inventory data
+    loaded_data = load_data("inventory.json")
+    if loaded_data:
+        stock_data.update(loaded_data)
+    add_item("apple", 10)
+    add_item("banana", 3)
+    print_data()
+    save_data("inventory.json")
+    print("Inventory system demonstration complete")
 
-main()
+
+if __name__ == "__main__":
+    main()
