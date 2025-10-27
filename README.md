@@ -15,8 +15,11 @@ Project Structure
 ├── bandit_report.txt        # Bandit security report
 ├── reflection.md            # Personal reflection
 └── README.md               # This file
+
+
 Installation
-bash# Install static analysis tools
+bash
+# Install static analysis tools
 pip install pylint flake8 bandit
 
 # Verify installations
